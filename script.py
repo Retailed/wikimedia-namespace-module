@@ -50,7 +50,9 @@ def parse_pages_data(request):
     :param request: json request from get_pages_data
     :return: parsed ids and titles of pages and apcontinue if exists
     """
-    continue_addr = request['continue']['apcontinue']
+    continue_addr = False
+    if 'continue' in request:
+        continue_addr = request['continue']['apcontinue']
     pages_data = []
     for elem in request['query']['allpages']:
         pages_data.append([elem['pageid'], elem['title']])
@@ -63,5 +65,9 @@ if __name__ == "__main__":
     session = mwapi.Session(SITENAME, user_agent="LostEnchanter")
     request_data = get_pages_data(session)
     basic_pages_data, continue_addr = parse_pages_data(request_data)
+    while continue_addr:
+        request_data = get_pages_data(session, continue_addr)
+        basic_pages_data, continue_addr = parse_pages_data(request_data)
 
+    print('all')
 
