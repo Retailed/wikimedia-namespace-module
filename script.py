@@ -5,6 +5,11 @@ SITENAME: str = 'https://en.wikipedia.org/'
 
 
 def database_init():
+    '''
+    Create table for storing soursecodes if needed.
+
+    :return: empty
+    '''
     conn = sqlite3.connect('namespace-modules.db')
     cursor = conn.cursor()
     cursor.execute('''create table if not exists modulesData 
@@ -16,6 +21,11 @@ def database_init():
 
 
 def database_drop():
+    '''
+    Drops table for soursecodes if it exists.
+
+    :return: empty
+    '''
     conn = sqlite3.connect('namespace-modules.db')
     cursor = conn.cursor()
     cursor.execute('drop table if exists modulesData')
@@ -24,12 +34,18 @@ def database_drop():
 
 
 def database_fill_pages_data(pages_data):
+    '''
+    Bulk insert parsed data into table.
+
+    :param pages_data: array of arrays
+        data from parsed api requests
+    :return: empty
+    '''
     conn = sqlite3.connect('namespace-modules.db')
     cursor = conn.cursor()
     cursor.executemany('INSERT INTO modulesData VALUES (?, ?, ?)', pages_data)
     conn.commit()
     conn.close()
-
 
 
 def get_pages_data(session, continue_addr=''):
