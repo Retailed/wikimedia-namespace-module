@@ -21,6 +21,15 @@ def init_database():
 
 
 def get_pages_data(session, continue_addr=''):
+    """
+    Makes allpages request in namespace to get pages info.
+
+    :param session: mwapi.Session
+        connection to wikipedia api through mwapi
+    :param continue_addr: string, optional
+         apcontinue for loading info past aplimit
+    :return: json-formatted request answer
+    """
     params = {'action': 'query',
               'format': 'json',
               'list': 'allpages',
@@ -34,8 +43,13 @@ def get_pages_data(session, continue_addr=''):
     return request_data
 
 
-
 def parse_pages_data(request):
+    """
+    Parses allpages request to get basic info of module: namespace pages and apcontinue.
+
+    :param request: json request from get_pages_data
+    :return: parsed ids and titles of pages and apcontinue if exists
+    """
     continue_addr = request['continue']['apcontinue']
     pages_data = []
     for elem in request['query']['allpages']:
