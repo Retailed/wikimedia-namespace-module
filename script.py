@@ -60,12 +60,21 @@ def parse_pages_data(request):
 
 
 def get_parse_page_soursecode(session, page_id):
+    """
+    Request and parse sourcecode of page with chosen id
+
+    :param session: wapi.Session
+        connection to wikipedia api through mwapi
+    :param page_id: str
+        id of requested page
+    :return: string, containing the sourcecode of chosen page
+    """
     params = {'action': 'parse',
               'format': 'json',
               'pageid': page_id,
-              'prop': 'wikitext',
+              'prop': 'wikitext',      # saving in wikitext as it's more readable than html
               'formatversion': '2',
-              'maxlag': '1'}
+              'maxlag': '1'}           # adding lag to help server a bit
 
     request = session.get(params)
 
