@@ -1,11 +1,26 @@
 import mwapi     # using mediawiki library for making requests
-
+import sqlite3
 
 SITENAME: str = 'https://en.wikipedia.org/'
 
 
-def get_data():
+def init_database():
+    conn = sqlite3.connect('namespace-modules.db')
+    cursor = conn.cursor()
+    cursor.execute('''create table modulesData 
+                        (pageid integer unique, 
+                        title text,
+                        sourcecode text)''')
+    cursor.execute('insert into modulesData values (1, "F", "F")')
+    conn.commit()
 
+    cursor.execute('select * from modulesData')
+    print(cursor.fetchall())
+
+    conn.close()
+
+
+def get_data():
     session = mwapi.Session(SITENAME, user_agent="LostEnchanter")
     params = {'action': 'query',
               'format': 'json',
@@ -18,4 +33,4 @@ def get_data():
     print('Done')
 
 if __name__ == "__main__":
-    get_data()
+    init_database()
