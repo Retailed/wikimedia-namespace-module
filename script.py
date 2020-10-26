@@ -39,7 +39,6 @@ def get_pages_data(session, continue_addr=''):
               'apcontinue': continue_addr}
 
     request_data = session.get(params)
-    print('Done')
     return request_data
 
 
@@ -60,14 +59,39 @@ def parse_pages_data(request):
     return pages_data, continue_addr
 
 
+def get_parse_page_soursecode(session, page_id):
+    params = {'action': 'parse',
+              'format': 'json',
+              'pageid': page_id,
+              'prop': 'wikitext',
+              'formatversion': '2',
+              'maxlag': '1'}
+
+    request = session.get(params)
+
+    wikitext = False
+    if 'parse' in request:
+        wikitext = request['parse']['wikitext']
+
+    return wikitext
+
+
 
 if __name__ == "__main__":
     session = mwapi.Session(SITENAME, user_agent="LostEnchanter")
-    request_data = get_pages_data(session)
-    basic_pages_data, continue_addr = parse_pages_data(request_data)
+    continue_addr = 'AAAA'
+
     while continue_addr:
-        request_data = get_pages_data(session, continue_addr)
+        if continue_addr == 'AAAA':
+            request_data = get_pages_data(session)
+        else:
+            request_data = get_pages_data(session, continue_addr)
         basic_pages_data, continue_addr = parse_pages_data(request_data)
+        for i, elem in enumerate(basic_pages_data):
+            sourcecode = get_parse_page_soursecode(session, elem[0])
+            basic_pages_data[i].append(sourcecode)
+
+
 
     print('all')
 
