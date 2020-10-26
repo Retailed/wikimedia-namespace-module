@@ -88,14 +88,17 @@ def get_parse_page_soursecode(session, page_id):
 
 if __name__ == "__main__":
     session = mwapi.Session(SITENAME, user_agent="LostEnchanter")
-    continue_addr = 'AAAA'
+    continue_addr = 'AAAA'             # we know, that the 1st apcontinue is "bigger"
 
     while continue_addr:
         if continue_addr == 'AAAA':
             request_data = get_pages_data(session)
         else:
             request_data = get_pages_data(session, continue_addr)
+
         basic_pages_data, continue_addr = parse_pages_data(request_data)
+
+        # add sourcecode to existing data
         for i, elem in enumerate(basic_pages_data):
             sourcecode = get_parse_page_soursecode(session, elem[0])
             basic_pages_data[i].append(sourcecode)
