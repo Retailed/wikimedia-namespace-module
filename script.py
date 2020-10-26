@@ -115,7 +115,7 @@ def get_parse_page_soursecode(session, page_id):
         raise ValueError("MediaWiki returned an error:", str(error))
 
 
-def soursecode_fill_basic_table():
+def modules_fill_basic_table():
     database_drop()
     database_init()
     session = mwapi.Session(SITENAME, user_agent="LostEnchanter Outreachy round 21")
@@ -136,6 +136,9 @@ def soursecode_fill_basic_table():
         print('next batch')
 
 
+def soursecode_load
+
+
 if __name__ == "__main__":
-    soursecode_fill_basic_table()
+    modules_fill_basic_table()
 
