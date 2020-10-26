@@ -4,20 +4,32 @@ import sqlite3
 SITENAME: str = 'https://en.wikipedia.org/'
 
 
-def init_database():
+def database_init():
     conn = sqlite3.connect('namespace-modules.db')
     cursor = conn.cursor()
-    cursor.execute('''create table modulesData 
+    cursor.execute('''create table if not exists modulesData 
                         (pageid integer unique, 
                         title text,
                         sourcecode text)''')
-    cursor.execute('insert into modulesData values (1, "F", "F")')
     conn.commit()
-
-    cursor.execute('select * from modulesData')
-    print(cursor.fetchall())
-
     conn.close()
+
+
+def database_drop():
+    conn = sqlite3.connect('namespace-modules.db')
+    cursor = conn.cursor()
+    cursor.execute('drop table if exists modulesData')
+    conn.commit()
+    conn.close()
+
+
+def database_fill_pages_data(pages_data):
+    conn = sqlite3.connect('namespace-modules.db')
+    cursor = conn.cursor()
+    cursor.executemany('INSERT INTO modulesData VALUES (?, ?, ?)', pages_data)
+    conn.commit()
+    conn.close()
+
 
 
 def get_pages_data(session, continue_addr=''):
@@ -87,6 +99,7 @@ def get_parse_page_soursecode(session, page_id):
 
 
 if __name__ == "__main__":
+    database_init()
     session = mwapi.Session(SITENAME, user_agent="LostEnchanter")
     continue_addr = 'AAAA'             # we know, that the 1st apcontinue is "bigger"
 
