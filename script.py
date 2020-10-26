@@ -62,8 +62,7 @@ def get_pages_data(session, continue_addr=''):
               'format': 'json',
               'list': 'allpages',
               'apnamespace': '828',    # https://en.wikipedia.org/wiki/Special:PrefixIndex?prefix=&namespace=828
-              'aplimit': 'max',        # letting the request get first 500 pages
-              'maxlag': '3',           # waiting about 3 seconds is ok if needed
+              'aplimit': '20',         # letting the request get 20 pages
               'apcontinue': continue_addr}
 
     request_data = session.get(params)
@@ -101,8 +100,7 @@ def get_parse_page_soursecode(session, page_id):
               'format': 'json',
               'pageid': page_id,
               'prop': 'wikitext',      # saving in wikitext as it's more readable than html
-              'formatversion': '2',
-              'maxlag': '1'}           # adding lag to help server a bit
+              'formatversion': '2'}    # adding lag to help server a bit
 
     request = session.get(params)
 
@@ -113,10 +111,10 @@ def get_parse_page_soursecode(session, page_id):
     return wikitext
 
 
-
-if __name__ == "__main__":
+def soursecode_fetch():
+    database_drop()
     database_init()
-    session = mwapi.Session(SITENAME, user_agent="LostEnchanter")
+    session = mwapi.Session(SITENAME, user_agent="LostEnchanter Outreachy round 21")
     continue_addr = 'AAAA'             # we know, that the 1st apcontinue is "bigger"
 
     while continue_addr:
@@ -127,12 +125,19 @@ if __name__ == "__main__":
 
         basic_pages_data, continue_addr = parse_pages_data(request_data)
 
+        print('basic data collected')
         # add sourcecode to existing data
         for i, elem in enumerate(basic_pages_data):
             sourcecode = get_parse_page_soursecode(session, elem[0])
             basic_pages_data[i].append(sourcecode)
 
+        print('soursecodes loaded')
+        database_fill_pages_data(basic_pages_data)
+
+        print('next batch')
 
 
-    print('all')
+
+if __name__ == "__main__":
+    soursecode_fetch()
 
