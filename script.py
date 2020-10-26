@@ -1,4 +1,5 @@
 import mwapi     # using mediawiki library for making requests
+from mwapi.errors import APIError
 import sqlite3
 
 SITENAME: str = 'https://en.wikipedia.org/'
@@ -33,9 +34,9 @@ def database_drop():
     conn.close()
 
 
-def database_fill_pages_data(pages_data):
+def database_fill_pages_basic_data(pages_data):
     '''
-    Bulk insert parsed data into table.
+    Bulk insert parsed ids and titles into table.
 
     :param pages_data: array of arrays
         data from parsed api requests
@@ -43,7 +44,7 @@ def database_fill_pages_data(pages_data):
     '''
     conn = sqlite3.connect('namespace-modules.db')
     cursor = conn.cursor()
-    cursor.executemany('INSERT INTO modulesData VALUES (?, ?, ?)', pages_data)
+    cursor.executemany('INSERT INTO modulesData VALUES (?, ?, NULL)', pages_data)
     conn.commit()
     conn.close()
 
@@ -62,7 +63,7 @@ def get_pages_data(session, continue_addr=''):
               'format': 'json',
               'list': 'allpages',
               'apnamespace': '828',    # https://en.wikipedia.org/wiki/Special:PrefixIndex?prefix=&namespace=828
-              'aplimit': '20',         # letting the request get 20 pages
+              'aplimit': '500',        # letting the request get 500 pages
               'apcontinue': continue_addr}
 
     request_data = session.get(params)
@@ -102,16 +103,19 @@ def get_parse_page_soursecode(session, page_id):
               'prop': 'wikitext',      # saving in wikitext as it's more readable than html
               'formatversion': '2'}    # adding lag to help server a bit
 
-    request = session.get(params)
+    try:
+        request = session.get(params)
 
-    wikitext = False
-    if 'parse' in request:
-        wikitext = request['parse']['wikitext']
+        wikitext = False
+        if 'parse' in request:
+            wikitext = request['parse']['wikitext']
 
-    return wikitext
+        return wikitext
+    except APIError as error:
+        raise ValueError("MediaWiki returned an error:", str(error))
 
 
-def soursecode_fetch():
+def soursecode_fill_basic_table():
     database_drop()
     database_init()
     session = mwapi.Session(SITENAME, user_agent="LostEnchanter Outreachy round 21")
@@ -126,18 +130,12 @@ def soursecode_fetch():
         basic_pages_data, continue_addr = parse_pages_data(request_data)
 
         print('basic data collected')
-        # add sourcecode to existing data
-        for i, elem in enumerate(basic_pages_data):
-            sourcecode = get_parse_page_soursecode(session, elem[0])
-            basic_pages_data[i].append(sourcecode)
 
-        print('soursecodes loaded')
-        database_fill_pages_data(basic_pages_data)
+        database_fill_pages_basic_data(basic_pages_data)
 
         print('next batch')
 
 
-
 if __name__ == "__main__":
-    soursecode_fetch()
+    soursecode_fill_basic_table()
 
