@@ -49,6 +49,23 @@ def database_fill_pages_basic_data(pages_data):
     conn.close()
 
 
+def database_get_ids_without_sourses():
+    conn = sqlite3.connect('namespace-modules.db')
+    cursor = conn.cursor()
+    cursor.execute('select pageid from modulesData where sourcecode is NULL')
+    res = cursor.fetchall()
+    conn.close()
+    return res
+
+
+def database_set_soursecode(id, sourcetext):
+    conn = sqlite3.connect('namespace-modules.db')
+    cursor = conn.cursor()
+    cursor.execute('update modulesData set sourcecode = ? where pageid = ?', (sourcetext, id))
+    conn.commit()
+    conn.close()
+
+
 def get_pages_data(session, continue_addr=''):
     """
     Makes allpages request in namespace to get pages info.
@@ -112,7 +129,8 @@ def get_parse_page_soursecode(session, page_id):
 
         return wikitext
     except APIError as error:
-        raise ValueError("MediaWiki returned an error:", str(error))
+        print("MediaWiki returned an error:" + str(error))
+        return None
 
 
 def modules_fill_basic_table():
@@ -136,9 +154,22 @@ def modules_fill_basic_table():
         print('next batch')
 
 
-def soursecode_load
+
+
+def modules_load_sourses():
+    session = mwapi.Session(SITENAME, user_agent="LostEnchanter Outreachy round 21")
+    sourceless = database_get_ids_without_sourses()
+    failed = 0
+    for elem in sourceless:
+        source = get_parse_page_soursecode(session, elem[0])
+        if not source:
+            failed += 1
+        else:
+            database_set_soursecode(elem[0], source)
+
+    print("Sources failed to load: " + str(failed))
 
 
 if __name__ == "__main__":
-    modules_fill_basic_table()
+    modules_load_sourses()
 
