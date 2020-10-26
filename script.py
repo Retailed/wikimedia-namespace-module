@@ -20,17 +20,34 @@ def init_database():
     conn.close()
 
 
-def get_data():
-    session = mwapi.Session(SITENAME, user_agent="LostEnchanter")
+def get_pages_data(session, continue_addr=''):
     params = {'action': 'query',
               'format': 'json',
               'list': 'allpages',
               'apnamespace': '828',    # https://en.wikipedia.org/wiki/Special:PrefixIndex?prefix=&namespace=828
               'aplimit': 'max',        # letting the request get first 500 pages
-              'maxlag': '3'}           # waiting about 3 seconds is ok if needed
+              'maxlag': '3',           # waiting about 3 seconds is ok if needed
+              'apcontinue': continue_addr}
 
     request_data = session.get(params)
     print('Done')
+    return request_data
+
+
+
+def parse_pages_data(request):
+    continue_addr = request['continue']['apcontinue']
+    pages_data = []
+    for elem in request['query']['allpages']:
+        pages_data.append([elem['pageid'], elem['title']])
+
+    return pages_data, continue_addr
+
+
 
 if __name__ == "__main__":
-    init_database()
+    session = mwapi.Session(SITENAME, user_agent="LostEnchanter")
+    request_data = get_pages_data(session)
+    basic_pages_data, continue_addr = parse_pages_data(request_data)
+
+
