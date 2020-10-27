@@ -2,6 +2,11 @@ import mwapi     # using mediawiki library for making requests
 from mwapi.errors import APIError
 import sqlite3
 
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy.stats as st
+
+
 DATABASE_NAME: str = 'namespace-modules.db'
 OUTREACHY_INFO: str = 'LostEnchanter Outreachy round 21'
 SITENAME: str = 'https://en.wikipedia.org/'
@@ -97,6 +102,21 @@ def database_get_ids():
     return res
 
 
+def database_get_all_pages_info():
+    '''
+    Get interesting data of all the pages, stored in modulesData.
+
+    :return: array of tuples with info (title, contentmodel, touched, length)
+    '''
+    conn = sqlite3.connect(DATABASE_NAME)
+    cursor = conn.cursor()
+    cursor.execute('select title, contentmodel, touched, len from modulesData')
+    res = cursor.fetchall()
+    conn.close()
+    return res
+
+
+
 def database_expand_table():
     '''
     Create columns for additional info about loaded pages.
@@ -167,7 +187,7 @@ def parse_pages_data(request):
     return pages_data, continue_addr
 
 
-def get_parse_page_soursecode(session, page_id):
+def get_parse_page_sourcecode(session, page_id):
     """
     Request and parse sourcecode of page with chosen id
 
@@ -260,7 +280,7 @@ def modules_load_sources():
     sourceless = database_get_ids_without_sourses()
     failed = 0
     for elem in sourceless:
-        source = get_parse_page_soursecode(session, elem[0])
+        source = get_parse_page_sourcecode(session, elem[0])
         if not source:
             failed += 1
         else:
@@ -287,6 +307,24 @@ def modules_load_additional_data():
         database_set_additional_info(pages_data)
 
 
+def modules_statistics():
+    '''
+    Module for generating some statistics based on info from database
+
+    :return: empty
+    '''
+    res = database_get_all_pages_info()
+
+    print('Amount of pages in Module:namespace - {:d}'.format(len(res)))
+
+    lengths = [elem[-1] for elem in res]
+
+    plt.hist(lengths, density=True, bins=15, log='True')
+    plt.ylabel('Amount of pages')
+    plt.xlabel('Source length')
+
+    plt.show()
+
 if __name__ == "__main__":
-    modules_load_sources()
+    modules_statistics()
 
