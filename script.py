@@ -2,6 +2,8 @@ import mwapi     # using mediawiki library for making requests
 from mwapi.errors import APIError
 import sqlite3
 
+DATABASE_NAME: str = 'namespace-modules.db'
+OUTREACHY_INFO: str = 'LostEnchanter Outreachy round 21'
 SITENAME: str = 'https://en.wikipedia.org/'
 
 
@@ -11,7 +13,7 @@ def database_init():
 
     :return: empty
     '''
-    conn = sqlite3.connect('namespace-modules.db')
+    conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('''create table if not exists modulesData 
                         (pageid integer unique, 
@@ -27,7 +29,7 @@ def database_drop():
 
     :return: empty
     '''
-    conn = sqlite3.connect('namespace-modules.db')
+    conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('drop table if exists modulesData')
     conn.commit()
@@ -42,7 +44,7 @@ def database_fill_pages_basic_data(pages_data):
         data from parsed api requests
     :return: empty
     '''
-    conn = sqlite3.connect('namespace-modules.db')
+    conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.executemany('INSERT INTO modulesData VALUES (?, ?, NULL)', pages_data)
     conn.commit()
@@ -56,7 +58,7 @@ def database_get_ids_without_sourses():
 
     :return: array of tuples with ids without sourcecode
     '''
-    conn = sqlite3.connect('namespace-modules.db')
+    conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('select pageid from modulesData where sourcecode is NULL')
     res = cursor.fetchall()
@@ -74,7 +76,7 @@ def database_set_soursecode(id, sourcetext):
         soursecode of the page, obtained by parse request
     :return: empty
     '''
-    conn = sqlite3.connect('namespace-modules.db')
+    conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('update modulesData set sourcecode = ? where pageid = ?', (sourcetext, id))
     conn.commit()
@@ -87,7 +89,7 @@ def database_get_ids():
 
     :return: array of tuples with ids
     '''
-    conn = sqlite3.connect('namespace-modules.db')
+    conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('select pageid from modulesData')
     res = cursor.fetchall()
@@ -101,7 +103,7 @@ def database_expand_table():
 
     :return: empty
     '''
-    conn = sqlite3.connect('namespace-modules.db')
+    conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('alter table modulesData add column contentmodel text')
     cursor.execute('alter table modulesData add column touched numeric')
@@ -118,7 +120,7 @@ def database_set_additional_info(pages_info):
         structure: [contentmodel, touched, length, pageid]
     :return: empty
     '''
-    conn = sqlite3.connect('namespace-modules.db')
+    conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.executemany('update modulesData '
                    'set contentmodel = ?, touched = ?, len = ?'
@@ -228,9 +230,14 @@ def get_parse_additional_data(session, page_ids):
 
 
 def modules_fill_basic_table():
+    '''
+    Module for creating table in database and getting ids of pages from namespace.
+
+    :return: empty
+    '''
     database_drop()
     database_init()
-    session = mwapi.Session(SITENAME, user_agent="LostEnchanter Outreachy round 21")
+    session = mwapi.Session(SITENAME, user_agent=OUTREACHY_INFO)
     continue_addr = 'AAAA'             # we know, that the 1st apcontinue is "bigger"
 
     while continue_addr:
@@ -240,16 +247,16 @@ def modules_fill_basic_table():
             request_data = get_pages_data(session, continue_addr)
 
         basic_pages_data, continue_addr = parse_pages_data(request_data)
-
-        print('basic data collected')
-
         database_fill_pages_basic_data(basic_pages_data)
 
-        print('next batch')
 
+def modules_load_sources():
+    '''
+    Module for loading sourcecode of pages listed in database.
 
-def modules_load_sourses():
-    session = mwapi.Session(SITENAME, user_agent="LostEnchanter Outreachy round 21")
+    :return: empty
+    '''
+    session = mwapi.Session(SITENAME, user_agent=OUTREACHY_INFO)
     sourceless = database_get_ids_without_sourses()
     failed = 0
     for elem in sourceless:
@@ -263,9 +270,15 @@ def modules_load_sourses():
 
 
 def modules_load_additional_data():
-    # database_expand_table()
+    '''
+    Module for loading additional info (fields contentmodel, touched, length)
+     of pages listed in database.
 
-    session = mwapi.Session(SITENAME, user_agent="LostEnchanter Outreachy round 21")
+    :return: empty
+    '''
+    database_expand_table()
+
+    session = mwapi.Session(SITENAME, user_agent=OUTREACHY_INFO)
     ids = database_get_ids()
 
     stepsize = 25
@@ -275,5 +288,5 @@ def modules_load_additional_data():
 
 
 if __name__ == "__main__":
-    modules_load_sourses()
+    modules_load_sources()
 
