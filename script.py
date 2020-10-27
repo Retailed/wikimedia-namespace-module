@@ -54,7 +54,7 @@ def database_get_ids_without_sourses():
     Get all page ids, where the sourcecode wasn't loaded previously.
     (or is empty, as we can't differentiate)
 
-    :return: array of ids without sourcecode
+    :return: array of tuples with ids without sourcecode
     '''
     conn = sqlite3.connect('namespace-modules.db')
     cursor = conn.cursor()
@@ -79,6 +79,20 @@ def database_set_soursecode(id, sourcetext):
     cursor.execute('update modulesData set sourcecode = ? where pageid = ?', (sourcetext, id))
     conn.commit()
     conn.close()
+
+
+def database_get_ids():
+    '''
+    Get ids of all the pages, stored in modulesData.
+
+    :return: array of tuples with ids
+    '''
+    conn = sqlite3.connect('namespace-modules.db')
+    cursor = conn.cursor()
+    cursor.execute('select pageid from modulesData')
+    res = cursor.fetchall()
+    conn.close()
+    return res
 
 
 def get_pages_data(session, continue_addr=''):
@@ -148,6 +162,39 @@ def get_parse_page_soursecode(session, page_id):
         return None
 
 
+def get_parse_additional_data(session, page_ids):
+    '''
+    Request additional page info for chosen ids and parse obtained json.
+
+    :param session: wapi.Session
+        connection to wikipedia api through mwapi
+    :param page_ids: array of tuples with ids
+    :return: array of arrays
+        each array stores contentmodel, touched and length fields for id
+    '''
+    ids_string = str(page_ids[0][0])
+    for elem in page_ids:
+        ids_string += "|" + str(elem[0])
+
+    params = {'action': 'query',
+              'format': 'json',
+              'pageids': ids_string,
+              'prop': 'info',
+              'inprop': 'protection'}
+
+    request_data = session.get(params)
+
+    pages_data = []
+    elem = request_data['query']['pages']
+    for curr_id in page_ids:
+        pages_data.append([elem[str(curr_id[0])]['contentmodel'],
+                           elem[str(curr_id[0])]['touched'],
+                           elem[str(curr_id[0])]['length'],
+                           str(curr_id[0])])
+
+    return pages_data
+
+
 def modules_fill_basic_table():
     database_drop()
     database_init()
@@ -169,8 +216,6 @@ def modules_fill_basic_table():
         print('next batch')
 
 
-
-
 def modules_load_sourses():
     session = mwapi.Session(SITENAME, user_agent="LostEnchanter Outreachy round 21")
     sourceless = database_get_ids_without_sourses()
@@ -185,6 +230,15 @@ def modules_load_sourses():
     print("Sources failed to load: " + str(failed))
 
 
+def modules_load_additional_data():
+    session = mwapi.Session(SITENAME, user_agent="LostEnchanter Outreachy round 21")
+    ids = database_get_ids()
+
+    stepsize = 20
+    for i in range(0, len(ids), stepsize):
+        get_parse_additional_data(session, ids[i:i+stepsize])
+
+
 if __name__ == "__main__":
-    modules_load_sourses()
+    modules_load_additional_data()
 
