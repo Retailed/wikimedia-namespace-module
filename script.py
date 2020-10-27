@@ -50,6 +50,12 @@ def database_fill_pages_basic_data(pages_data):
 
 
 def database_get_ids_without_sourses():
+    '''
+    Get all page ids, where the sourcecode wasn't loaded previously.
+    (or is empty, as we can't differentiate)
+
+    :return: array of ids without sourcecode
+    '''
     conn = sqlite3.connect('namespace-modules.db')
     cursor = conn.cursor()
     cursor.execute('select pageid from modulesData where sourcecode is NULL')
@@ -59,6 +65,15 @@ def database_get_ids_without_sourses():
 
 
 def database_set_soursecode(id, sourcetext):
+    '''
+    Save soursecode to the page with chosen id.
+
+    :param id: string
+        page id
+    :param sourcetext: string
+        soursecode of the page, obtained by parse request
+    :return: empty
+    '''
     conn = sqlite3.connect('namespace-modules.db')
     cursor = conn.cursor()
     cursor.execute('update modulesData set sourcecode = ? where pageid = ?', (sourcetext, id))
