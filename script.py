@@ -95,6 +95,38 @@ def database_get_ids():
     return res
 
 
+def database_expand_table():
+    '''
+    Create columns for additional info about loaded pages.
+
+    :return: empty
+    '''
+    conn = sqlite3.connect('namespace-modules.db')
+    cursor = conn.cursor()
+    cursor.execute('alter table modulesData add column contentmodel text')
+    cursor.execute('alter table modulesData add column touched numeric')
+    cursor.execute('alter table modulesData add column len integer')
+    conn.commit()
+    conn.close()
+
+
+def database_set_additional_info(pages_info):
+    '''
+    Update page info with additional data (contentmodel, touched and length)
+
+    :param pages_info: array of arrays
+        structure: [contentmodel, touched, length, pageid]
+    :return: empty
+    '''
+    conn = sqlite3.connect('namespace-modules.db')
+    cursor = conn.cursor()
+    cursor.executemany('update modulesData '
+                   'set contentmodel = ?, touched = ?, len = ?'
+                   'where pageid = ?', pages_info)
+    conn.commit()
+    conn.close()
+
+
 def get_pages_data(session, continue_addr=''):
     """
     Makes allpages request in namespace to get pages info.
@@ -231,14 +263,17 @@ def modules_load_sourses():
 
 
 def modules_load_additional_data():
+    # database_expand_table()
+
     session = mwapi.Session(SITENAME, user_agent="LostEnchanter Outreachy round 21")
     ids = database_get_ids()
 
-    stepsize = 20
+    stepsize = 25
     for i in range(0, len(ids), stepsize):
-        get_parse_additional_data(session, ids[i:i+stepsize])
+        pages_data = get_parse_additional_data(session, ids[i:i+stepsize])
+        database_set_additional_info(pages_data)
 
 
 if __name__ == "__main__":
-    modules_load_additional_data()
+    modules_load_sourses()
 
