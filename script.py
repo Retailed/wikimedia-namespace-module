@@ -1,4 +1,4 @@
-import mwapi     # using mediawiki library for making requests
+import mwapi  # using mediawiki library for making requests
 from mwapi.errors import APIError
 import sqlite3
 
@@ -6,18 +6,17 @@ import matplotlib.pyplot as plt
 import numpy as np
 import scipy.stats as st
 
-
 DATABASE_NAME: str = 'namespace-modules.db'
 OUTREACHY_INFO: str = 'LostEnchanter Outreachy round 21'
 SITENAME: str = 'https://en.wikipedia.org/'
 
 
 def database_init():
-    '''
-    Create table for storing soursecodes if needed.
+    """
+    Create table for storing sourcecode if needed.
 
     :return: empty
-    '''
+    """
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('''create table if not exists modulesData 
@@ -29,11 +28,11 @@ def database_init():
 
 
 def database_drop():
-    '''
-    Drops table for soursecodes if it exists.
+    """
+    Drops table for sourcecode if it exists.
 
     :return: empty
-    '''
+    """
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('drop table if exists modulesData')
@@ -42,13 +41,13 @@ def database_drop():
 
 
 def database_fill_pages_basic_data(pages_data):
-    '''
+    """
     Bulk insert parsed ids and titles into table.
 
     :param pages_data: array of arrays
         data from parsed api requests
     :return: empty
-    '''
+    """
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.executemany('INSERT INTO modulesData VALUES (?, ?, NULL)', pages_data)
@@ -56,13 +55,13 @@ def database_fill_pages_basic_data(pages_data):
     conn.close()
 
 
-def database_get_ids_without_sourses():
-    '''
+def database_get_ids_without_sources():
+    """
     Get all page ids, where the sourcecode wasn't loaded previously.
     (or is empty, as we can't differentiate)
 
     :return: array of tuples with ids without sourcecode
-    '''
+    """
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('select pageid from modulesData where sourcecode is NULL')
@@ -71,16 +70,16 @@ def database_get_ids_without_sourses():
     return res
 
 
-def database_set_soursecode(id, sourcetext):
-    '''
-    Save soursecode to the page with chosen id.
+def database_set_sourcecode(id, sourcetext):
+    """
+    Save sourcecode to the page with chosen id.
 
     :param id: string
         page id
     :param sourcetext: string
-        soursecode of the page, obtained by parse request
+        sourcecode of the page, obtained by parse request
     :return: empty
-    '''
+    """
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('update modulesData set sourcecode = ? where pageid = ?', (sourcetext, id))
@@ -89,11 +88,11 @@ def database_set_soursecode(id, sourcetext):
 
 
 def database_get_ids():
-    '''
+    """
     Get ids of all the pages, stored in modulesData.
 
     :return: array of tuples with ids
-    '''
+    """
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('select pageid from modulesData')
@@ -103,11 +102,11 @@ def database_get_ids():
 
 
 def database_get_all_pages_info():
-    '''
+    """
     Get interesting data of all the pages, stored in modulesData.
 
     :return: array of tuples with info (title, contentmodel, touched, length)
-    '''
+    """
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('select title, contentmodel, touched, len from modulesData')
@@ -116,13 +115,12 @@ def database_get_all_pages_info():
     return res
 
 
-
 def database_expand_table():
-    '''
+    """
     Create columns for additional info about loaded pages.
 
     :return: empty
-    '''
+    """
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.execute('alter table modulesData add column contentmodel text')
@@ -133,18 +131,18 @@ def database_expand_table():
 
 
 def database_set_additional_info(pages_info):
-    '''
+    """
     Update page info with additional data (contentmodel, touched and length)
 
     :param pages_info: array of arrays
         structure: [contentmodel, touched, length, pageid]
     :return: empty
-    '''
+    """
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
     cursor.executemany('update modulesData '
-                   'set contentmodel = ?, touched = ?, len = ?'
-                   'where pageid = ?', pages_info)
+                       'set contentmodel = ?, touched = ?, len = ?'
+                       'where pageid = ?', pages_info)
     conn.commit()
     conn.close()
 
@@ -162,8 +160,8 @@ def get_pages_data(session, continue_addr=''):
     params = {'action': 'query',
               'format': 'json',
               'list': 'allpages',
-              'apnamespace': '828',    # https://en.wikipedia.org/wiki/Special:PrefixIndex?prefix=&namespace=828
-              'aplimit': '500',        # letting the request get 500 pages
+              'apnamespace': '828',  # https://en.wikipedia.org/wiki/Special:PrefixIndex?prefix=&namespace=828
+              'aplimit': '500',  # letting the request get 500 pages
               'apcontinue': continue_addr}
 
     request_data = session.get(params)
@@ -200,8 +198,8 @@ def get_parse_page_sourcecode(session, page_id):
     params = {'action': 'parse',
               'format': 'json',
               'pageid': page_id,
-              'prop': 'wikitext',      # saving in wikitext as it's more readable than html
-              'formatversion': '2'}    # adding lag to help server a bit
+              'prop': 'wikitext',  # saving in wikitext as it's more readable than html
+              'formatversion': '2'}  # adding lag to help server a bit
 
     try:
         request = session.get(params)
@@ -217,7 +215,7 @@ def get_parse_page_sourcecode(session, page_id):
 
 
 def get_parse_additional_data(session, page_ids):
-    '''
+    """
     Request additional page info for chosen ids and parse obtained json.
 
     :param session: wapi.Session
@@ -225,7 +223,7 @@ def get_parse_additional_data(session, page_ids):
     :param page_ids: array of tuples with ids
     :return: array of arrays
         each array stores contentmodel, touched and length fields for id
-    '''
+    """
     ids_string = str(page_ids[0][0])
     for elem in page_ids:
         ids_string += "|" + str(elem[0])
@@ -251,15 +249,15 @@ def get_parse_additional_data(session, page_ids):
 
 
 def modules_fill_basic_table():
-    '''
+    """
     Module for creating table in database and getting ids of pages from namespace.
 
     :return: empty
-    '''
+    """
     database_drop()
     database_init()
     session = mwapi.Session(SITENAME, user_agent=OUTREACHY_INFO)
-    continue_addr = 'AAAA'             # we know, that the 1st apcontinue is "bigger"
+    continue_addr = 'AAAA'  # we know, that the 1st apcontinue is "bigger"
 
     while continue_addr:
         if continue_addr == 'AAAA':
@@ -272,31 +270,31 @@ def modules_fill_basic_table():
 
 
 def modules_load_sources():
-    '''
+    """
     Module for loading sourcecode of pages listed in database.
 
     :return: empty
-    '''
+    """
     session = mwapi.Session(SITENAME, user_agent=OUTREACHY_INFO)
-    sourceless = database_get_ids_without_sourses()
+    sourceless = database_get_ids_without_sources()
     failed = 0
     for elem in sourceless:
         source = get_parse_page_sourcecode(session, elem[0])
         if not source:
             failed += 1
         else:
-            database_set_soursecode(elem[0], source)
+            database_set_sourcecode(elem[0], source)
 
     print("Sources failed to load: " + str(failed))
 
 
 def modules_load_additional_data():
-    '''
+    """
     Module for loading additional info (fields contentmodel, touched, length)
      of pages listed in database.
 
     :return: empty
-    '''
+    """
     database_expand_table()
 
     session = mwapi.Session(SITENAME, user_agent=OUTREACHY_INFO)
@@ -304,16 +302,16 @@ def modules_load_additional_data():
 
     stepsize = 25
     for i in range(0, len(ids), stepsize):
-        pages_data = get_parse_additional_data(session, ids[i:i+stepsize])
+        pages_data = get_parse_additional_data(session, ids[i:i + stepsize])
         database_set_additional_info(pages_data)
 
 
 def modules_statistics():
-    '''
+    """
     Module for generating some statistics based on info from database
 
     :return: empty
-    '''
+    """
     res = database_get_all_pages_info()
 
     print('Amount of pages in Module:namespace - {:d}'.format(len(res)))
