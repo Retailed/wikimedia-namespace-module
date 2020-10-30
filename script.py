@@ -4,7 +4,7 @@ import sqlite3
 
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.stats as st
+from datetime import datetime, date
 
 DATABASE_NAME: str = 'namespace-modules.db'
 OUTREACHY_INFO: str = 'LostEnchanter Outreachy round 21'
@@ -259,7 +259,7 @@ def statistics_contentmodel(contentmodels):
 
     fig, ax = plt.subplots()
 
-    contentmodel_types = list(set(contentmodels))       # as set is unordered
+    contentmodel_types = list(set(contentmodels))  # as set is unordered
     y_pos = np.arange(len(contentmodel_types))
     amount = [contentmodels.count(elem) for elem in contentmodel_types]
 
@@ -289,14 +289,69 @@ def statistics_length(lengths):
     print('Maximum source code length - {:d} symbols ({:d} case(s))\n'
           'Minimal source code length - {:d} symbols ({:d} case(s))\n'
           'Mean source code length - {:d} symbols'.format(
-                max(lengths), lengths.count(max(lengths)),
-                min(lengths), lengths.count(min(lengths)), round(np.mean(lengths))))
+        max(lengths), lengths.count(max(lengths)),
+        min(lengths), lengths.count(min(lengths)), round(np.mean(lengths))))
 
     plt.hist(lengths, bins='sturges', log=True, histtype='stepfilled')
     plt.ylabel('Amount of pages')
     plt.xlabel('Source length in symbols')
     plt.title('Histogram of the lengths of sourcecode')
 
+    plt.show()
+
+
+def top_autolabel(plt, rects):
+    """
+    Attach a text label above each bar in *rects*, displaying its height.
+    From https://matplotlib.org/gallery/lines_bars_and_markers/barchart.html#sphx-glr-gallery-lines-bars-and-markers-barchart-py
+    """
+    for rect in rects:
+        height = rect.get_height()
+        plt.annotate('{}'.format(height),
+                     xy=(rect.get_x() + rect.get_width() / 2, height),
+                     xytext=(0, 3),  # 3 points vertical offset
+                     textcoords="offset points",
+                     ha='center', va='bottom')
+
+
+def statistics_touched(dates):
+    """
+    Shows some statistics about dates array:\n
+    - plots last year of modification\n
+    - plots last month of modification for 2020.
+
+    :param dates: array of strings, representing datetime in format "yyyy-mm-ddThh:mm:ssZ"
+        touched field data
+    :return: empty
+    """
+    # making an array of datetime objects
+    datetimes = []
+    for elem in dates:
+        datetimes.append(datetime.strptime(elem, '%Y-%m-%dT%H:%M:%SZ'))  # '2020-10-29T19:43:32Z'
+
+    # distribution through years
+    years = [elem.year for elem in datetimes]
+    year_vars = sorted(list(set(years)))  # as set is unordered
+    years_amount = [years.count(elem) for elem in year_vars]
+
+    rects = plt.bar(year_vars, years_amount, log=True)
+    top_autolabel(plt, rects)
+    plt.ylabel('Amount of pages')
+    plt.xlabel('Year of last modification')
+    plt.title('Page modified last time by year')
+    plt.show()
+
+    # distribution through 2020
+    months = [elem.month for elem in datetimes if elem.year == 2020]
+    month_vars = [i for i in range(1, 11)]
+    months_amount = [months.count(elem) for elem in month_vars]
+    month_names = [date(2000, elem, 1).strftime("%b") for elem in month_vars]
+
+    rects = plt.bar(month_names, months_amount, log=True)
+    top_autolabel(plt, rects)
+    plt.ylabel('Amount of pages')
+    plt.xlabel('Month of last modification')
+    plt.title('Page modified last time in 2020 by month')
     plt.show()
 
 
@@ -373,8 +428,9 @@ def modules_statistics():
     touched_dates = [elem[2] for elem in res]
     lengths = [elem[-1] for elem in res]
 
-    statistics_contentmodel(contentmodels)
-    statistics_length(lengths)
+    # statistics_contentmodel(contentmodels)
+    # statistics_length(lengths)
+    statistics_touched(touched_dates)
 
 
 if __name__ == "__main__":
