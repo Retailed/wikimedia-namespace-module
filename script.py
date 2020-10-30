@@ -256,6 +256,7 @@ def statistics_contentmodel(contentmodels):
         contentmodel field data
     :return: empty
     """
+
     fig, ax = plt.subplots()
 
     contentmodel_types = list(set(contentmodels))       # as set is unordered
@@ -271,6 +272,30 @@ def statistics_contentmodel(contentmodels):
     ax.set_yticklabels(contentmodel_types)
     ax.set_xlabel('Amount')
     ax.set_title('Contentmodel types in pages')
+
+    plt.show()
+
+
+def statistics_length(lengths):
+    """
+    Shows some statistics about lengths array:\n
+    - minimum, maximum and mean length;\n
+    - draws histogram based on pages lengths given.\n
+
+    :param lengths:array of integers,
+        length field data
+    :return: empty
+    """
+    print('Maximum source code length - {:d} symbols ({:d} case(s))\n'
+          'Minimal source code length - {:d} symbols ({:d} case(s))\n'
+          'Mean source code length - {:d} symbols'.format(
+                max(lengths), lengths.count(max(lengths)),
+                min(lengths), lengths.count(min(lengths)), round(np.mean(lengths))))
+
+    plt.hist(lengths, bins='sturges', log=True, histtype='stepfilled')
+    plt.ylabel('Amount of pages')
+    plt.xlabel('Source length in symbols')
+    plt.title('Histogram of the lengths of sourcecode')
 
     plt.show()
 
@@ -349,11 +374,7 @@ def modules_statistics():
     lengths = [elem[-1] for elem in res]
 
     statistics_contentmodel(contentmodels)
-    #plt.hist(lengths, density=True, bins=15, log='True')
-    #plt.ylabel('Amount of pages')
-    #plt.xlabel('Source length')
-
-    #plt.show()
+    statistics_length(lengths)
 
 
 if __name__ == "__main__":
