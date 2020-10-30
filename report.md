@@ -24,6 +24,17 @@ From the first look the basic idea was to split the task into 3 parts:
 In this part the implementation of previously mentioned steps will be explained. 
 Additionally I'll provide names of some of the functions connected to these steps.
 
+These steps were implemented with the idea that all of them can be used separately, maybe in different work sessions.
+However, the overall order _should not_ be changed, as most of the functions don't check whether used fields 
+exist in the database or not.
+
+The decision to store information in the database was made because Sqlite is built-in library for Python,
+so it doesn't make you install anything, and storing things in database is a good way to save information 
+and avoid parsing at the same time.
+
+Moreover, commentaries are provided to each function to help understand the code and to make further usage
+and/or modification of the program easier. 
+
 ##### _Step 1 – fetching the sourcecode_
 
 Working on the first task had to be divided into 2 substeps, because of the way Wikimedia API is made.
@@ -60,3 +71,5 @@ which structure resembles previous modules:
 
 This part of the problem is coded into `modules_statistics()`.
  
+### Analytics
+
