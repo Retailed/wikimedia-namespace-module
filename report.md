@@ -84,11 +84,11 @@ Additionally, 9 more pages have no sourcecode, so they are not used, and their l
 
 Maximum source code length is 942724 symbols, mean source code length is 4293 symbols.
 
-![histogram of the lengths of pages sourcecode](https://raw.githubusercontent.com/Retailed/wikimedia-namespace-module/main/lengths.PNG?token=AAZWEYRAB37ZSCGGXOWMVAC7TR2XG)
+![histogram of the lengths of pages sourcecode](images/lengths.PNG)
 
-![contentmodel types in pages](https://raw.githubusercontent.com/Retailed/wikimedia-namespace-module/main/contentmodels.PNG?token=AAZWEYVYWME3WM7K3ZR26K27TR2RM)
+![contentmodel types in pages](images/contentmodels.PNG)
 
-![year of last page modification](https://raw.githubusercontent.com/Retailed/wikimedia-namespace-module/main/touched_year.PNG?token=AAZWEYXEF4V6S5ETS35PNAK7TR2X2)
+![year of last page modification](images/touched_year.PNG)
 
-![month of last page modification in 2020](https://raw.githubusercontent.com/Retailed/wikimedia-namespace-module/main/touched_month.PNG?token=AAZWEYRBD6FWJI7RQSHTSTK7TR2XM)
+![month of last page modification in 2020](images/touched_month.PNG)
 
