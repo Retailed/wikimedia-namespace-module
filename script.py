@@ -241,10 +241,11 @@ def get_parse_additional_data(session, page_ids):
     pages_data = []
     elem = request_data['query']['pages']
     for curr_id in page_ids:
-        pages_data.append([elem[str(curr_id[0])]['contentmodel'],
-                           elem[str(curr_id[0])]['touched'],
-                           elem[str(curr_id[0])]['length'],
-                           str(curr_id[0])])
+        if 'missing' not in elem[str(curr_id[0])]:
+            pages_data.append([elem[str(curr_id[0])]['contentmodel'],
+                               elem[str(curr_id[0])]['touched'],
+                               elem[str(curr_id[0])]['length'],
+                               str(curr_id[0])])
 
     return pages_data
 
@@ -325,6 +326,6 @@ def modules_statistics():
 
     plt.show()
 
-if __name__ == "__main__":
-    modules_statistics()
 
+if __name__ == "__main__":
+    modules_load_additional_data()
