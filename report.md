@@ -69,7 +69,26 @@ which structure resembles previous modules:
 
 ##### _Step 3 – generating statistics_
 
-This part of the problem is coded into `modules_statistics()`.
+This part of the problem is coded into `modules_statistics()`. The module works with length of saved files,
+specified contentmodel and datetime of last modification – "touched". It loads information from the database 
+and then plots graphics using matplotlib.
  
 ### Analytics
+
+Amount of pages in Module:namespace - 12533.
+
+Pages with IDs [41871839](https://en.wikipedia.org/wiki/Module:Jct/city/Chinissai) 
+and [41627197](https://en.wikipedia.org/wiki/Module:Jcttop/core/Chinissai) 
+throw an exception, and their sourcecode can not be obtained because of that.
+Additionally, 9 more pages have no sourcecode, so they are not used, and their length is 0.
+
+Maximum source code length is 942724 symbols, mean source code length is 4293 symbols.
+
+![histogram of the lengths of pages sourcecode](https://raw.githubusercontent.com/Retailed/wikimedia-namespace-module/main/lengths.PNG?token=AAZWEYRAB37ZSCGGXOWMVAC7TR2XG)
+
+![contentmodel types in pages](https://raw.githubusercontent.com/Retailed/wikimedia-namespace-module/main/contentmodels.PNG?token=AAZWEYVYWME3WM7K3ZR26K27TR2RM)
+
+![year of last page modification](https://raw.githubusercontent.com/Retailed/wikimedia-namespace-module/main/touched_year.PNG?token=AAZWEYXEF4V6S5ETS35PNAK7TR2X2)
+
+![month of last page modification in 2020](https://raw.githubusercontent.com/Retailed/wikimedia-namespace-module/main/touched_month.PNG?token=AAZWEYRBD6FWJI7RQSHTSTK7TR2XM)
 
