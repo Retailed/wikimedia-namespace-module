@@ -210,7 +210,7 @@ def get_parse_page_sourcecode(session, page_id):
 
         return wikitext
     except APIError as error:
-        print("MediaWiki returned an error:" + str(error))
+        print("MediaWiki returned an error: {:s} for page with id {:d}".format(str(error), page_id))
         return None
 
 
