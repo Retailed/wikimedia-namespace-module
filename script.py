@@ -288,9 +288,9 @@ def statistics_length(lengths):
     """
     print('Maximum source code length - {:d} symbols ({:d} case(s))\n'
           'Minimal source code length - {:d} symbols ({:d} case(s))\n'
-          'Mean source code length - {:d} symbols'.format(
-        max(lengths), lengths.count(max(lengths)),
-        min(lengths), lengths.count(min(lengths)), round(np.mean(lengths))))
+          'Mean source code length - {:d} symbols'.format(max(lengths), lengths.count(max(lengths)),
+                                                          min(lengths), lengths.count(min(lengths)),
+                                                          round(np.mean(lengths))))
 
     plt.hist(lengths, bins='sturges', log=True, histtype='stepfilled')
     plt.ylabel('Amount of pages')
@@ -300,18 +300,18 @@ def statistics_length(lengths):
     plt.show()
 
 
-def top_autolabel(plt, rects):
+def top_autolabel(curr_plt, rects):
     """
     Attach a text label above each bar in *rects*, displaying its height.
     From https://matplotlib.org/gallery/lines_bars_and_markers/barchart.html#sphx-glr-gallery-lines-bars-and-markers-barchart-py
     """
     for rect in rects:
         height = rect.get_height()
-        plt.annotate('{}'.format(height),
-                     xy=(rect.get_x() + rect.get_width() / 2, height),
-                     xytext=(0, 3),  # 3 points vertical offset
-                     textcoords="offset points",
-                     ha='center', va='bottom')
+        curr_plt.annotate('{}'.format(height),
+                          xy=(rect.get_x() + rect.get_width() / 2, height),
+                          xytext=(0, 3),  # 3 points vertical offset
+                          textcoords="offset points",
+                          ha='center', va='bottom')
 
 
 def statistics_touched(dates):
@@ -415,7 +415,7 @@ def modules_load_additional_data():
 
 def modules_statistics():
     """
-    Module for generating some statistics based on info from database
+    Module for generating some statistics based on info from database.
 
     :return: empty
     """
@@ -423,15 +423,17 @@ def modules_statistics():
 
     print('Amount of pages in Module:namespace - {:d}'.format(len(res)))
 
-    titles = [elem[0] for elem in res]
     contentmodels = [elem[1] for elem in res]
     touched_dates = [elem[2] for elem in res]
     lengths = [elem[-1] for elem in res]
 
-    # statistics_contentmodel(contentmodels)
-    # statistics_length(lengths)
+    statistics_contentmodel(contentmodels)
+    statistics_length(lengths)
     statistics_touched(touched_dates)
 
 
 if __name__ == "__main__":
+    modules_fill_basic_table()
+    modules_load_sources()
+    modules_load_additional_data()
     modules_statistics()
