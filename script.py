@@ -109,7 +109,7 @@ def database_get_all_pages_info():
     """
     conn = sqlite3.connect(DATABASE_NAME)
     cursor = conn.cursor()
-    cursor.execute('select title, contentmodel, touched, len from modulesData')
+    cursor.execute('select title, contentmodel, touched, len from modulesData where len is not NULL')
     res = cursor.fetchall()
     conn.close()
     return res
@@ -248,6 +248,33 @@ def get_parse_additional_data(session, page_ids):
     return pages_data
 
 
+def statistics_contentmodel(contentmodels):
+    """
+    Draws horizontal bar chart based on contentmodels of saved pages.
+
+    :param contentmodels: array of strings,
+        contentmodel field data
+    :return: empty
+    """
+    fig, ax = plt.subplots()
+
+    contentmodel_types = list(set(contentmodels))       # as set is unordered
+    y_pos = np.arange(len(contentmodel_types))
+    amount = [contentmodels.count(elem) for elem in contentmodel_types]
+
+    # adding amount of elements to axis labels
+    for i, elem in enumerate(contentmodel_types):
+        contentmodel_types[i] = elem + "\n(" + str(amount[i]) + ")"
+
+    ax.barh(y_pos, amount, align='center', log="True")
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(contentmodel_types)
+    ax.set_xlabel('Amount')
+    ax.set_title('Contentmodel types in pages')
+
+    plt.show()
+
+
 def modules_fill_basic_table():
     """
     Module for creating table in database and getting ids of pages from namespace.
@@ -316,14 +343,18 @@ def modules_statistics():
 
     print('Amount of pages in Module:namespace - {:d}'.format(len(res)))
 
+    titles = [elem[0] for elem in res]
+    contentmodels = [elem[1] for elem in res]
+    touched_dates = [elem[2] for elem in res]
     lengths = [elem[-1] for elem in res]
 
-    plt.hist(lengths, density=True, bins=15, log='True')
-    plt.ylabel('Amount of pages')
-    plt.xlabel('Source length')
+    statistics_contentmodel(contentmodels)
+    #plt.hist(lengths, density=True, bins=15, log='True')
+    #plt.ylabel('Amount of pages')
+    #plt.xlabel('Source length')
 
-    plt.show()
+    #plt.show()
 
 
 if __name__ == "__main__":
-    modules_load_additional_data()
+    modules_statistics()
